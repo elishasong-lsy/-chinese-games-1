@@ -129,13 +129,6 @@
       word-break:break-all;
     }
     .linkbox span{color:var(--accent);}
-    .hint{
-      margin-top:16px;
-      color:rgba(233,238,255,.75);
-      font-size:13px;
-      line-height:1.45;
-    }
-    .hint b{color:var(--accent);}
   </style>
 </head>
 <body>
@@ -143,24 +136,29 @@
     <div class="top">
       <div>
         <h1>中文小游戏入口（Game Hub）</h1>
-        <p class="sub">直接点进入游戏即可。你只需要在 GitHub 更新文件，Netlify 会自动同步更新。</p>
+        <p class="sub">直接点进入游戏即可。当前以 <b>GitHub Pages</b> 为主链接（更稳定）。</p>
       </div>
       <div class="chips">
-        <div class="chip">建议分享： <b>Netlify</b> 链接</div>
+        <div class="chip">主链接： <b>GitHub Pages</b></div>
         <div class="chip">单个游戏： <b>可单独发链接</b></div>
       </div>
     </div>
 
     <div class="grid" id="grid"></div>
 
-    <div class="hint">
-      使用提示：以后每加一个新游戏，只需要把新文件上传到仓库根目录（例如 <b>ESC_2_16.html</b>），
-      然后在本页复制一张卡片，改 <b>title</b> 和 <b>href</b> 即可。<br/>
-      如果你想把链接发给学生，推荐发 Netlify 域名下的链接（更稳定）。例如：<b>https://chinese-games.netlify.app/ESC_2_6.html</b>
+    <!-- 使用提示已隐藏：学生看不到 -->
+    <!--
+    <div class="tips">
+      使用提示：以后每增加一个新游戏...
     </div>
+    -->
   </div>
 
   <script>
+    // ✅ 开关：如果你以后重新连回 Netlify，把这里改成 true 就会显示 Netlify 备用链接
+    const SHOW_NETLIFY_LINK = false;
+    const NETLIFY_BASE = "https://chinese-games.netlify.app/";
+
     // ✅ 只要在这里加一条，就能自动生成卡片 + 按钮 + 直接链接
     const GAMES = [
       {
@@ -200,37 +198,49 @@
 
     const grid = document.getElementById("grid");
 
-    const githubBase = location.origin + location.pathname.replace(/\/index\.html$/, "/");
-    const netlifyBase = "https://chinese-games.netlify.app/";
+    // ✅ 关键：不管你的网址是否带 index.html，这个都能正确得到“当前文件夹”
+    const githubBase = new URL("./", location.href).href;
+
+    function escHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
     function cardHTML(g){
       const githubUrl = githubBase + g.file;
-      const netlifyUrl = netlifyBase + g.file;
+      const netlifyUrl = NETLIFY_BASE + g.file;
 
       return `
         <div class="card">
           <div class="tags">
-            <div class="tag">Unit: <b>${g.unit}</b></div>
-            <div class="tag">Type: <b>${g.type}</b></div>
-            ${g.skill ? `<div class="tag">Skill: <b>${g.skill}</b></div>` : ``}
-            ${g.mode ? `<div class="tag">Mode: <b>${g.mode}</b></div>` : ``}
+            <div class="tag">Unit: <b>${escHtml(g.unit)}</b></div>
+            <div class="tag">Type: <b>${escHtml(g.type)}</b></div>
+            ${g.skill ? `<div class="tag">Skill: <b>${escHtml(g.skill)}</b></div>` : ``}
+            ${g.mode ? `<div class="tag">Mode: <b>${escHtml(g.mode)}</b></div>` : ``}
           </div>
 
           <div>
-            <div class="title2">${g.title}</div>
-            <p class="desc">${g.desc}</p>
+            <div class="title2">${escHtml(g.title)}</div>
+            <p class="desc">${escHtml(g.desc)}</p>
           </div>
 
           <div class="btnrow">
-            <a class="btn" href="${g.file}">进入游戏</a>
-            <a class="btn secondary" href="${g.file}" target="_blank" rel="noopener">新窗口打开</a>
+            <a class="btn" href="${githubUrl}">进入游戏</a>
+            <a class="btn secondary" href="${githubUrl}" target="_blank" rel="noopener">新窗口打开</a>
           </div>
 
           <div class="linkbox">
             直接链接（GitHub Pages）：<br/>
-            <span>${githubUrl}</span><br/><br/>
-            备用链接（Netlify）：<br/>
-            <span>${netlifyUrl}</span>
+            <span>${escHtml(githubUrl)}</span>
+            ${
+              SHOW_NETLIFY_LINK
+              ? `<br/><br/>备用链接（Netlify）：<br/><span>${escHtml(netlifyUrl)}</span>`
+              : ``
+            }
           </div>
         </div>
       `;
